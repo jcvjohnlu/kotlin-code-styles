@@ -1,37 +1,35 @@
 #!/bin/bash
-# Installs Square's IntelliJ configs into your user configs.
+# Installs JCV's IntelliJ configs into your user configs.
+echo "Installing JCV AndroidStudio code style..."
+echo ""
 
-echo "Installing Square IntelliJ configs..."
-
-CONFIGS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/configs"
-
-for i in $HOME/Library/Preferences/IntelliJIdea*  \
-         $HOME/Library/Preferences/IdeaIC*        \
-         $HOME/Library/Preferences/AndroidStudio* \
-         $HOME/.IntelliJIdea*/config              \
-         $HOME/.IdeaIC*/config                    \
-         $HOME/.AndroidStudio*/config             \
-         $HOME/Library/Application\ Support/JetBrains/IntelliJIdea* \
-         $HOME/Library/Application\ Support/Google/AndroidStudio* \
-         $HOME/Library/Application\ Support/JetBrains/IdeaIC* \
-         $HOME/Library/Application\ Support/Google/AndroidStudio*/settingsRepository/repository \
-         $HOME/Library/Application\ Support/JetBrains/IdeaIC*/settingsRepository/repository
+LATEST_CODE_STYLE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/configs/codestyles/JcvAndroid.xml"
+if [ "$1" != "" ]; then
+  lastChar=${1: -1}
+  if [[ $lastChar == '/' ]]; then
+    TARGET_DIR=("$1.idea")
+  else
+    TARGET_DIR=("$1/.idea")
+  fi
+else
+  TARGET_DIR=("$HOME/Library/Application Support/Google")
+fi
+echo $TARGET_DIR
+for target in $(ls "$TARGET_DIR" | grep Android)
 do
-  if [[ -d "$i" ]]; then
-    # Install codestyles
-    mkdir -p "$i/codestyles"
-    cp -frv "$CONFIGS/codestyles"/* "$i/codestyles"
-
-    # Install inspections
-    mkdir -p "$i/inspection"
-    cp -frv "$CONFIGS/inspection"/* "$i/inspection"
-
-    # Install options ("Exclude from Import and Completion")
-    mkdir -p "$i/options"
-    cp -frv "$CONFIGS/options"/* "$i/options"
+  t=$TARGET_DIR/$target
+  # create codestyles dir and ...
+  echo "create codestyles dir in $t"
+  mkdir -p ${t}/codestyles
+  # ... copy to latest style to ${TARGET_DIR}
+  echo "Copying..."
+  cp -frv ${LATEST_CODE_STYLE} "${t}/codestyles/"
+  if [ "$1" != "" ]; then
+    echo "Renaming JcvAndroid.xml to Project.xml"
+    mv ${t}/codestyles/JcvAndroid.xml ${t}/codestyles/Project.xml
   fi
 done
 
-echo "Done."
 echo ""
-echo "Restart IntelliJ and/or AndroidStudio, go to preferences, and apply 'Square' or 'SquareAndroid'."
+echo "Done."
+echo "Restart AndroidStudio. Go to Preferences->Editor->Code Style and apply Scheme 'JcvAndroid'."
